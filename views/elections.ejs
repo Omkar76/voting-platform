@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Elections</title>
+</head>
+<body>
+    <div>
+    <h1 class="text-4xl">Welcome!</h1>
+        <% if(!elections.length) { %>
+                You haven't created any elections yet!
+        <% } %>    
+        
+        <form method="POST" action="/elections/" enctype="application/json">
+                <input  class="p-2 border-2 border-gray-dark rounded-sm" type="text" name="name" />
+                <button class="uppercase bg-purple-800 text-white rounded-md font-bold p-2">
+                    Create New Election
+                </button>
+        </form>
+        
+        <% for(let e of elections){ %>
+            <div class="border border-gray-dark flex flex-row items-center">
+            <h2 class="font-bold text-2xl m-2 flex-auto"><%= e.name %></h2>  
+            <a href="/elections/<%= e.id %>/questions" class="p-1 text-purple-800 mx-2">Manage questions</a>
+            <a href="/elections/<%= e.id %>/voters" class="p-1 text-purple-800 mx-2">Manage voters</a>
+            </div>
+        <% } %> 
+    </div>
+</body>
+</html>

@@ -14,9 +14,26 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey : "electionId"
       });
     }
+
+    static getElections(){
+      const elections = Election.findAll();
+      return elections;
+    }
+    
+    static addElection(e){
+      const election = Election.create(e);
+      return election;
+    }
   }
+
   Election.init({
-    name: DataTypes.STRING
+    name: {
+      type : DataTypes.STRING,
+      allowNull : false,
+      validate : {
+        notEmpty : {msg : "Non empty election name is required"}
+      }
+    }
   }, {
     sequelize,
     modelName: 'Election',

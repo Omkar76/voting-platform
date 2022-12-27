@@ -2,6 +2,9 @@
 const {
   Model
 } = require('sequelize');
+
+// const Option = require('./option');
+
 module.exports = (sequelize, DataTypes) => {
   class Question extends Model {
     /**
@@ -10,15 +13,12 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Question.belongsTo(models.Election, {
-        foreignKey : 'electionId'
-      });
+      Question.belongsTo(models.Election, {foreignKey : "electionId"});
 
-      Question.hasMany(models.Option, {
-        foreignKey : 'questionId'
-      });
+      Question.hasMany(models.Option);
     }
   }
+
   Question.init({
     title: DataTypes.STRING,
     description: DataTypes.STRING
