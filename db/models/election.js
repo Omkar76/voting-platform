@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey : "electionId",
         as : "questions"
       });
+
+      Election.belongsTo(models.Admin, {
+        foreignKey : "adminId"
+      });
     }
 
     static getElections(){
