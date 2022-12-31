@@ -11,32 +11,32 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Election.hasMany(models.Question, {
-        foreignKey : "electionId",
-        as : "questions"
+        foreignKey: "electionId",
+        as: "questions"
       });
 
       Election.belongsTo(models.Admin, {
-        foreignKey : "adminId"
+        foreignKey: "adminId"
       });
     }
 
-    static getElections(){
-      const elections = Election.findAll();
+    static getElections(adminId) {
+      const elections = Election.findAll({ where: { adminId } });
       return elections;
     }
-    
-    static addElection(e){
-      const election = Election.create(e);
+
+    static addElection(adminId, e) {
+      const election = Election.create({ ...e, adminId });
       return election;
     }
   }
 
   Election.init({
     name: {
-      type : DataTypes.STRING,
-      allowNull : false,
-      validate : {
-        notEmpty : {msg : "Non empty election name is required"}
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        notEmpty: { msg: "Non empty election name is required" }
       }
     }
   }, {
