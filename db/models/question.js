@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static async addQuestion(electionId, q) {
-      const question = Question.create({ electionId, ...q });
+      const question = Question.create({ ...q, electionId});
       return question;
     }
   }
