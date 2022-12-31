@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Options</title>
 </head>
 <body>
     Options for <%= question.title %>
     <form method="POST" action="/elections/<%= question.electionId %>/questions/<%= question.id %>/options" enctype="application/json">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <input  class="p-2 border-2 border-gray-dark rounded-sm" type="text" name="text" />
         <button class="uppercase bg-purple-800 text-white rounded-md font-bold p-2">
             Create New Option

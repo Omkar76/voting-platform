@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <style>
+        /* *{
+            outline: 1px solid red;
+        } */
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>    
+    <div class="grid justify-center gap-y-2.5 p-4 max-w-xl m-auto">
+        <% if(errors && errors.length > 0)  { %>
+            <div class="bg-red-600 text-white px-4 py-2 rounded-md list-inside">
+                <% for(let err of  errors) { %>
+                    <li> <%= err %> </li>
+                <% } %>
+            </div>
+          <% } %>
+        
+        <h1 class="text-xl">Sign in</h1>
+        <form action="/login" method="post" class="flex flex-col gap-2">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label>
+                Email
+                <input class="w-full border-2 border-green p-1" type="email" name="email">
+            </label>
+            <label>
+                Password
+                <input class="w-full border-2 border-green p-1" type="password" name="password">
+            </label>
+
+            <button class="w-full bg-green-600 p-2 text-white rounded-md">Submit</button>
+        </form>
+    </div>
+</body>
+
+</html>
