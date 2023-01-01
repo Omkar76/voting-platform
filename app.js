@@ -13,7 +13,7 @@ const session = require("express-session");
 const ensureLogin = require("connect-ensure-login");
 const FileStore = require("session-file-store")(session);
 const { ValidationError } = require('sequelize');
-const { Election, Question, Option, Admin } = require('./db/models');
+const { Election, Question, Option, Admin, Voter } = require('./db/models');
 
 app.set('view engine', 'ejs');
 app.use(express.json());
@@ -87,7 +87,7 @@ app.get("/signup", function (req, res) {
         title: "Sign up",
         csrfToken: req.csrfToken(),
     });
-});
+}); ``
 
 app.get("/signout", (req, res) => {
     req.logout((err) => {
@@ -159,10 +159,7 @@ app.put('/elections/:eid', async (req, res) => {
 app.use('/elections/:eid', checkElectionOwnership);
 
 app.get('/elections/:eid/questions', async (req, res) => {
-    const election = await Election.findByPk(req.params.eid, { include: [{ model: Question, as: 'questions' }] });
-
-    // const questions = await election.getQuestions();
-    // console.log(questions, "questions bro");
+    const election = await Election.findByPk(req.params.eid, { include: [{ model: Question, as: 'questions' }] });;
     res.render("questions", { election, csrfToken: req.csrfToken() });
 })
 
@@ -174,11 +171,11 @@ app.post('/elections/:eid/questions/', async (req, res) => {
         res.redirect(req.url);
     } else {
         res.json(question);
-    }  
+    }
 })
 
 app.get('/elections/:eid/questions/:qid/options', async (req, res) => {
-    const question = await Question.findByPk(req.params.qid, {include: [{ model: Option, as: 'options' }] });
+    const question = await Question.findByPk(req.params.qid, { include: [{ model: Option, as: 'options' }] });
     res.render("options", { question, csrfToken: req.csrfToken() });
 })
 
@@ -192,5 +189,19 @@ app.post('/elections/:eid/questions/:qid/options/', async (req, res) => {
     }
 })
 
+
+app.get('/elections/:eid/voters', async (req, res) => {
+    const election = await Election.findByPk(req.params.eid, { include: [{ model: Voter, as: 'voters' }] });;
+    res.render("voters", { election, csrfToken: req.csrfToken() });
+})
+
+app.post('/elections/:eid/voters/', async (req, res) => {
+    const voter = await Voter.addVoter(req.params.eid, req.body);
+    if (req.accepts('html')) {
+        res.redirect(req.url);
+    } else {
+        res.json(voter);
+    }
+})
 
 module.exports = app;
