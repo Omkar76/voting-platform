@@ -7,13 +7,14 @@ const cookieParser = require('cookie-parser');
 const checkElectionOwnership = require('./middleware/checkElectionOwnership');
 const csrf = require("tiny-csrf");
 const flash = require("connect-flash");
-const LocalStratergy = require("passport-local");
+const LocalStratergy = require("passport-local").Strategy;
 const passport = require("passport");
 const session = require("express-session");
-const ensureLogin = require("connect-ensure-login");
+const ensureLogin = require("./middleware/ensureLogin");
 const FileStore = require("session-file-store")(session);
 const { ValidationError } = require('sequelize');
 const { Election, Question, Option, Admin, Voter } = require('./db/models');
+// const path = require('path');
 
 app.set('view engine', 'ejs');
 app.use(express.json());
@@ -37,16 +38,17 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(
+passport.use('local-admin',
     new LocalStratergy(
+
         {
             usernameField: "email",
             passwordField: "password",
         },
         async (email, password, done) => {
             try {
-                const admin = await Admin.findOne({ where: { email } });
-
+                const _admin = await Admin.findOne({ where: { email } })
+                const admin = _admin?.toJSON();
                 if (!admin) {
                     return done(null, false, { message: "Admin doesn't exist" });
                 }
@@ -55,6 +57,10 @@ passport.use(
                 if (!isMatch) {
                     return done(null, false, { message: "Invalid password" });
                 }
+                delete admin.password;
+
+                // IMPORTANT
+                admin.role = "admin";
 
                 return done(null, admin);
             } catch (err) {
@@ -64,6 +70,38 @@ passport.use(
     )
 );
 
+passport.use('local-voter',
+    new LocalStratergy(
+        {
+            usernameField: "username",
+            passwordField: "password",
+        },
+        async (username, password, done) => {
+            console.log(username)
+            try {
+                const _voter = await Voter.findOne({ where: { username } })
+                const voter = _voter?.toJSON();
+                console.log(voter)
+                if (!voter) {
+                    return done(null, false, { message: "Voter doesn't exist" });
+                }
+                const isMatch = await bcrypt.compare(password, voter.password);
+
+                if (!isMatch) {
+                    return done(null, false, { message: "Invalid password" });
+                }
+                delete voter.password;
+
+                // IMPORTANT
+                voter.role = "voter";
+
+                return done(null, voter);
+            } catch (err) {
+                return done(err);
+            }
+        }
+    )
+);
 passport.serializeUser((admin, done) => {
     done(null, admin);
 });
@@ -101,7 +139,7 @@ app.get("/signout", (req, res) => {
 
 app.post(
     "/login",
-    passport.authenticate("local", {
+    passport.authenticate("local-admin", {
         failureRedirect: "/login",
         successRedirect: "/elections",
         failureFlash: true,
@@ -132,7 +170,9 @@ app.post("/admins", async (req, res) => {
     });
 });
 
-app.get('/elections', ensureLogin.ensureLoggedIn({ failureRedirect: '/login' }), async (req, res) => {
+app.use('/elections', ensureLogin({ failureRedirect: '/login', role: 'admin' }));
+
+app.get('/elections', async (req, res) => {
     const elections = await Election.getElections(req.user.id);
     if (req.accepts("html")) {
         res.render('elections', { elections, csrfToken: req.csrfToken() });
@@ -196,12 +236,61 @@ app.get('/elections/:eid/voters', async (req, res) => {
 })
 
 app.post('/elections/:eid/voters/', async (req, res) => {
-    const voter = await Voter.addVoter(req.params.eid, req.body);
+    const {username, password} = req.body;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const voter = await Voter.addVoter(req.params.eid, {username, password :hashedPassword});
     if (req.accepts('html')) {
         res.redirect(req.url);
     } else {
         res.json(voter);
     }
+});
+
+app.get('/v/:eid/', async (req, res) => {
+    res.locals.errors = req.flash("error");
+
+    if (!req.isAuthenticated || !(req.isAuthenticated() && req?.user?.role == "voter")) {
+        res.render('voter-login', { title: "Login as voter", csrfToken: req.csrfToken(), eid: req.params.eid });
+    } else {
+        const election = await Election.findOne({
+            where: { id: req.params.eid },
+            include: [{
+                model: Question,
+                as: 'questions',
+                include: [{
+                    model: Option,
+                    as: 'options',
+                    // where: { isActive: true }
+                }]
+            }]
+        })
+        res.render('vote', { csrfToken: req.csrfToken(), eid: req.params.eid, election, title: "Vote" });
+    }
+});
+
+app.post('/v/:eid/login', (req, res, next) => {
+    passport.authenticate('local-voter', (err, voter) => {
+        if (err) {
+            console.log(err);
+        }
+
+        if (!voter) {
+            return next("Voter not found");
+        }
+
+        req.logIn(voter, function (err) {
+            if (err) {
+                return next(err);
+            } else {
+                return res.redirect(`/v/${req.params.eid}/`);
+            }
+            // return res.redirect(`/v/${req.params.eid}/`);
+        });
+    })(req, res, next);
+});
+
+app.post('/v/:eid/vote', ensureLogin({role: "voter"}),(req, res)=>{
+    res.json(req.body);
 })
 
 module.exports = app;
