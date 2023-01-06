@@ -20,7 +20,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Option.init({
-    text: DataTypes.STRING
+    text: DataTypes.STRING,
+    voteCount : {
+      type: DataTypes.INTEGER,
+      defaultValue : 0
+    }
   }, {
     sequelize,
     modelName: 'Option',

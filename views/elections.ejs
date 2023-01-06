@@ -9,27 +9,37 @@
     <title>Elections</title>
 </head>
 <body>
-    <div>
+    <div class="flex-col flex justify-center gap-y-2.5 p-4 max-w-5xl m-auto">
+
     <h1 class="text-4xl">Welcome!</h1>
         <% if(!elections.length) { %>
                 You haven't created any elections yet!
         <% } %>    
         
-        <form method="POST" action="/elections/" enctype="application/json">
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <input  class="p-2 border-2 border-gray-dark rounded-sm" type="text" name="name" />
+        <form method="POST" action="/elections/" enctype="application/json" class="flex">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" required>
+                <input  placeholder="Election name" class="p-2 border-2 border-gray-dark rounded-sm flex-grow" type="text" name="name" />
                 <button class="uppercase bg-purple-800 text-white rounded-md font-bold p-2">
-                    Create New Election
+                    Add Election
                 </button>
         </form>
         
         <% for(let e of elections){ %>
-            <div class="border border-gray-dark flex flex-row items-center">
-            <h2 class="font-bold text-2xl m-2 flex-auto"><%= e.name %></h2>  
+            <div class="border rounded-sm border-gray-dark flex flex-row items-center ">
+            <h2 class="font-bold text-2xl m-2 flex-auto"><%= e.name %></h2> 
             <a href="/elections/<%= e.id %>/questions" class="p-1 text-purple-800 mx-2">Manage questions</a>
             <a href="/elections/<%= e.id %>/voters" class="p-1 text-purple-800 mx-2">Manage voters</a>
+            
+            <% if(!e.launched) { %>
+            <a href="/elections/<%= e.id %>/launch" class="p-1 text-red-800 mx-2">Launch</a>
+            <% } %>
+
+            <% if(e.launched && !e.ended) { %>
+                <a href="/elections/<%= e.id %>/end" class="p-1 text-red-800 mx-2">End</a>
+                <% } %>
             </div>
         <% } %> 
+
     </div>
 </body>
 </html>

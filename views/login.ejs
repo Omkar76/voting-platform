@@ -18,7 +18,7 @@
 </head>
 
 <body>    
-    <div class="grid justify-center gap-y-2.5 p-4 max-w-xl m-auto">
+    <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-xl m-auto">
         <% if(errors && errors.length > 0)  { %>
             <div class="bg-red-600 text-white px-4 py-2 rounded-md list-inside">
                 <% for(let err of  errors) { %>
@@ -32,11 +32,11 @@
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <label>
                 Email
-                <input class="w-full border-2 border-green p-1" type="email" name="email">
+                <input class="w-full border-2 rounded-sm border-green p-1" type="email" name="email">
             </label>
             <label>
                 Password
-                <input class="w-full border-2 border-green p-1" type="password" name="password">
+                <input class="w-full border-2 rounded-sm border-green p-1" type="password" name="password">
             </label>
 
             <button class="w-full bg-green-600 p-2 text-white rounded-md">Submit</button>

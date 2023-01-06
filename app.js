@@ -13,7 +13,7 @@ const session = require("express-session");
 const ensureLogin = require("./middleware/ensureLogin");
 const FileStore = require("session-file-store")(session);
 const { ValidationError } = require('sequelize');
-const { Election, Question, Option, Admin, Voter } = require('./db/models');
+const { Election, Question, Option, Admin, Voter, sequelize, Sequelize } = require('./db/models');
 // const path = require('path');
 
 app.set('view engine', 'ejs');
@@ -174,8 +174,10 @@ app.use('/elections', ensureLogin({ failureRedirect: '/login', role: 'admin' }))
 
 app.get('/elections', async (req, res) => {
     const elections = await Election.getElections(req.user.id);
+    console.log(elections);
     if (req.accepts("html")) {
         res.render('elections', { elections, csrfToken: req.csrfToken() });
+
     } else {
         res.json(elections);
     }
@@ -236,9 +238,9 @@ app.get('/elections/:eid/voters', async (req, res) => {
 })
 
 app.post('/elections/:eid/voters/', async (req, res) => {
-    const {username, password} = req.body;
+    const { username, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const voter = await Voter.addVoter(req.params.eid, {username, password :hashedPassword});
+    const voter = await Voter.addVoter(req.params.eid, { username, password: hashedPassword });
     if (req.accepts('html')) {
         res.redirect(req.url);
     } else {
@@ -246,12 +248,61 @@ app.post('/elections/:eid/voters/', async (req, res) => {
     }
 });
 
+
+app.get('/elections/:eid/launch', async (req, res) => {
+    const election = await Election.findByPk(req.params.eid);
+    console.log(election)
+    res.render('launch', { election, csrfToken: req.csrfToken(), title: "Launch election" });
+});
+
+
+app.get('/elections/:eid/end', async (req, res) => {
+    const election = await Election.findByPk(req.params.eid);
+    res.render('end', { election, csrfToken: req.csrfToken(), title: "End election" });
+});
+
+app.post('/elections/:eid/launch', async (req, res) => {
+    await Election.update({ launched: true }, {
+        where: {
+            id: req.params.eid
+        }
+    });
+    if (req.accepts("html")) {
+        res.redirect('/elections');
+    } else {
+        res.json({success: true});
+    }
+});
+
+app.post('/elections/:eid/end', async (req, res) => {
+    await Election.update({ ended: true }, {
+        where: {
+            id: req.params.eid
+        }
+    });
+    if (req.accepts("html")) {
+        res.redirect('/elections');
+    } else {
+        res.json({success : true});
+    }
+});
+app.use('/v/:eid', async (req, res, next) => {
+    const election = await Election.findOne({ where: { id: req.params.eid, launched: true } });
+    if (!election) {
+        next("Election doesn't exist!");
+    } else {
+        next();
+    }
+});
+
 app.get('/v/:eid/', async (req, res) => {
     res.locals.errors = req.flash("error");
+    console.log(res.locals.errors)
 
     if (!req.isAuthenticated || !(req.isAuthenticated() && req?.user?.role == "voter")) {
         res.render('voter-login', { title: "Login as voter", csrfToken: req.csrfToken(), eid: req.params.eid });
     } else {
+        const voter = await Voter.findByPk(req.user.id);
         const election = await Election.findOne({
             where: { id: req.params.eid },
             include: [{
@@ -260,37 +311,52 @@ app.get('/v/:eid/', async (req, res) => {
                 include: [{
                     model: Option,
                     as: 'options',
-                    // where: { isActive: true }
                 }]
             }]
-        })
+        });
+
+        if(election.ended){
+            return res.render('result');
+        }
+        
+        if (voter.voted) {
+            return res.render("voting-thanks");
+        }
+
         res.render('vote', { csrfToken: req.csrfToken(), eid: req.params.eid, election, title: "Vote" });
     }
 });
 
-app.post('/v/:eid/login', (req, res, next) => {
-    passport.authenticate('local-voter', (err, voter) => {
-        if (err) {
-            console.log(err);
-        }
-
-        if (!voter) {
-            return next("Voter not found");
-        }
-
-        req.logIn(voter, function (err) {
-            if (err) {
-                return next(err);
-            } else {
-                return res.redirect(`/v/${req.params.eid}/`);
-            }
-            // return res.redirect(`/v/${req.params.eid}/`);
-        });
-    })(req, res, next);
+app.post('/v/:eid/login', async (req, res, next) => {
+    const callback = passport.authenticate('local-voter', { failureFlash: true, failureRedirect: req.url.slice(0, -6), successRedirect: req.url.slice(0, -6) })
+    callback(req, res, next);
 });
 
-app.post('/v/:eid/vote', ensureLogin({role: "voter"}),(req, res)=>{
-    res.json(req.body);
+app.post('/v/:eid/vote', ensureLogin({ role: "voter" }), async (req, res) => {
+    const voter = await Voter.findByPk(req.user.id);
+    const election = await Election.findOne({
+        where: { id: req.params.eid },
+        include: [{
+            model: Question,
+            as: 'questions'
+        }]
+    });
+
+    if (voter.voted) {
+        return res.send("Already voted");
+    }
+
+    election.questions.forEach(q => {
+        Option.increment('voteCount', {
+            by: 1,
+            where: {
+                questionId: q.id,
+                id: req.body["question_" + q.id]
+            }
+        });
+    });
+
+    Voter.update({ voted: true }, { where: { id: req.user.id } }).then(r => { res.render("voting-thanks") });
 })
 
 module.exports = app;

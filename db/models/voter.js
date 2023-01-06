@@ -19,7 +19,11 @@ module.exports = (sequelize, DataTypes) => {
   }
   Voter.init({
     username: DataTypes.STRING,
-    password: DataTypes.STRING
+    password: DataTypes.STRING,
+    voted : {
+      type :DataTypes.BOOLEAN,
+      defaultValue : false
+    }
   }, {
     sequelize,
     modelName: 'Voter',
