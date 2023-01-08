@@ -31,6 +31,6 @@ module.exports = {
      * await queryInterface.dropTable('users');
      */
 
-    await queryInterface.removeColumn("Options", "id");
+    await queryInterface.removeColumn("Options", "questionId");
   }
 };
