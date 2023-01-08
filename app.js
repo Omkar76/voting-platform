@@ -9,12 +9,15 @@ const csrf = require("tiny-csrf");
 const flash = require("connect-flash");
 const LocalStratergy = require("passport-local").Strategy;
 const passport = require("passport");
+const path = require('path');
 const session = require("express-session");
 const ensureLogin = require("./middleware/ensureLogin");
-const FileStore = require("session-file-store")(session);
-const { ValidationError } = require('sequelize');
+const RedisStore = require("connect-redis")(session);
+const { createClient } = require("redis");
 const { Election, Question, Option, Admin, Voter, sequelize, Sequelize } = require('./db/models');
-// const path = require('path');
+const { ValidationError } = require('sequelize');
+
+redisClient.connect().catch(console.error)
 
 app.set('view engine', 'ejs');
 app.use(express.json());
@@ -23,10 +26,13 @@ const saltRounds = 10;
 app.use(cookieParser("kfdsjkgfdsjfjhfjdsfjdfhgsdjgjfsdhjfgdsfh"));
 app.use(csrf("hwgA0JweSTaQFclN08fFvJOEIFCaxdSs", ["POST", "PUT", "DELETE"]));
 app.use(flash());
+
+const redisClient = createClient({ legacyMode: true });
+
 app.use(
     session({
-        store: new FileStore({ path: "sessions" }),
-        resave: false,
+        store: new RedisStore({ client: redisClient }),
+        resave: true,
         saveUninitialized: false,
         secret: "B8/tsjAyWkJr)+esh:a.SSW..o.ZM?",
         cookie: {
@@ -77,11 +83,9 @@ passport.use('local-voter',
             passwordField: "password",
         },
         async (username, password, done) => {
-            console.log(username)
             try {
                 const _voter = await Voter.findOne({ where: { username } })
                 const voter = _voter?.toJSON();
-                console.log(voter)
                 if (!voter) {
                     return done(null, false, { message: "Voter doesn't exist" });
                 }
@@ -111,7 +115,10 @@ passport.deserializeUser((admin, done) => {
 });
 
 app.get("/", (req, res) => {
-    res.send("Hello!");
+    if(req?.user?.role=="admin"){
+        return res.redirect("/elections");
+    }
+    res.render("home")
 });
 
 app.get("/login", (req, res) => {
@@ -125,7 +132,7 @@ app.get("/signup", function (req, res) {
         title: "Sign up",
         csrfToken: req.csrfToken(),
     });
-}); ``
+}); 
 
 app.get("/signout", (req, res) => {
     req.logout((err) => {
@@ -174,9 +181,9 @@ app.use('/elections', ensureLogin({ failureRedirect: '/login', role: 'admin' }))
 
 app.get('/elections', async (req, res) => {
     const elections = await Election.getElections(req.user.id);
-    console.log(elections);
+
     if (req.accepts("html")) {
-        res.render('elections', { elections, csrfToken: req.csrfToken() });
+        res.render('elections', { elections, csrfToken: req.csrfToken(), email : req.user.email });
 
     } else {
         res.json(elections);
@@ -200,15 +207,21 @@ app.put('/elections/:eid', async (req, res) => {
 
 app.use('/elections/:eid', checkElectionOwnership);
 
+app.get('/elections/:eid', async (req, res)=>{
+    const successMessages = req.flash('success');
+    res.locals.successmsg = successMessages.length > 0 ? successMessages[0] : null;
+    const election = await Election.findByPk(req.params.eid);
+    const [qcount, vcount] = await Promise.all([election.countQuestions(), election.countVoters()]);
+    res.render('election', {election, csrfToken : req.csrfToken(), qcount,vcount});
+})
+
 app.get('/elections/:eid/questions', async (req, res) => {
     const election = await Election.findByPk(req.params.eid, { include: [{ model: Question, as: 'questions' }] });;
     res.render("questions", { election, csrfToken: req.csrfToken() });
 })
 
-
 app.post('/elections/:eid/questions/', async (req, res) => {
     const question = await Question.addQuestion(req.params.eid, req.body);
-    console.log(req.url)
     if (req.accepts('html')) {
         res.redirect(req.url);
     } else {
@@ -251,7 +264,6 @@ app.post('/elections/:eid/voters/', async (req, res) => {
 
 app.get('/elections/:eid/launch', async (req, res) => {
     const election = await Election.findByPk(req.params.eid);
-    console.log(election)
     res.render('launch', { election, csrfToken: req.csrfToken(), title: "Launch election" });
 });
 
@@ -262,13 +274,18 @@ app.get('/elections/:eid/end', async (req, res) => {
 });
 
 app.post('/elections/:eid/launch', async (req, res) => {
-    await Election.update({ launched: true }, {
+    const [_, election] = await Election.update({ launched: true }, {
+        returning : true,
+        plain : true,
         where: {
             id: req.params.eid
         }
     });
+
+    console.log(election , "Wtf")
+    req.flash('success', `Election "${election.name}" launched successfully`)
     if (req.accepts("html")) {
-        res.redirect('/elections');
+        res.redirect(`/elections/${req.params.eid}/`);
     } else {
         res.json({success: true});
     }
@@ -297,10 +314,8 @@ app.use('/v/:eid', async (req, res, next) => {
 
 app.get('/v/:eid/', async (req, res) => {
     res.locals.errors = req.flash("error");
-    console.log(res.locals.errors)
-
     if (!req.isAuthenticated || !(req.isAuthenticated() && req?.user?.role == "voter")) {
-        res.render('voter-login', { title: "Login as voter", csrfToken: req.csrfToken(), eid: req.params.eid });
+        res.redirect(path.join(req.url, 'login'));
     } else {
         const voter = await Voter.findByPk(req.user.id);
         const election = await Election.findOne({
@@ -325,6 +340,11 @@ app.get('/v/:eid/', async (req, res) => {
 
         res.render('vote', { csrfToken: req.csrfToken(), eid: req.params.eid, election, title: "Vote" });
     }
+});
+
+app.get('/v/:eid/login', async (req, res, next) => {
+    res.locals.errors = req.flash("error");
+    res.render('voter-login', { title: "Login as voter", csrfToken: req.csrfToken(), eid: req.params.eid });
 });
 
 app.post('/v/:eid/login', async (req, res, next) => {
@@ -356,7 +376,7 @@ app.post('/v/:eid/vote', ensureLogin({ role: "voter" }), async (req, res) => {
         });
     });
 
-    Voter.update({ voted: true }, { where: { id: req.user.id } }).then(r => { res.render("voting-thanks") });
+    Voter.update({ voted: true }, { where: { id: req.user.id } }).then(r => { res.redirect(req.url.replace('vote','')) });
 })
 
 module.exports = app;
