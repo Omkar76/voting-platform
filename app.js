@@ -17,8 +17,6 @@ const { createClient } = require("redis");
 const { Election, Question, Option, Admin, Voter, sequelize, Sequelize } = require('./db/models');
 const { ValidationError } = require('sequelize');
 
-redisClient.connect().catch(console.error)
-
 app.set('view engine', 'ejs');
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -28,7 +26,7 @@ app.use(csrf("hwgA0JweSTaQFclN08fFvJOEIFCaxdSs", ["POST", "PUT", "DELETE"]));
 app.use(flash());
 
 const redisClient = createClient({ legacyMode: true });
-
+redisClient.connect().catch(console.error)
 app.use(
     session({
         store: new RedisStore({ client: redisClient }),
