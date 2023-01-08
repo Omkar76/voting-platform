@@ -7,6 +7,22 @@
     <title>Questions</title>
 </head>
 <body>
-    <%= election.name %>
+    <h1>Questions for <%= election.name %></h1>
+
+    <form action="/elections/<%= election.id %>/questions" method="POST">
+      <input type="text" name="title"/>
+      <input type="text" name="description">
+      <button>Create Question</button>
+  </form>
+
+   <% if(election.questions) { %>
+    <% for( let q of election.questions)  { %>
+      <div style="border:1px solid black;">
+      <%= q.title  %> 
+      <%= q.description %>
+      <a href="/elections/<%=election.id%>/questions/<%= q.id %>/options/">Manage options</a>
+    </div>
+    <% } %>
+   <%}%>
 </body>
 </html>

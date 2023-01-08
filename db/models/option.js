@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey : "questionId"
       });
     }
+
+    static addOption(questionId, o){
+      return Option.create({questionId, ...o});
+    }
   }
   Option.init({
     text: DataTypes.STRING

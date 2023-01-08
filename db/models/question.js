@@ -13,11 +13,20 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Question.belongsTo(models.Election, {foreignKey : "electionId"});
+      Question.belongsTo(models.Election, { foreignKey: "electionId" });
 
-      Question.hasMany(models.Option);
+      Question.hasMany(models.Option, {
+        foreignKey: "questionId",
+        as: 'options'
+      });
+    }
+
+    static async addQuestion(electionId, q) {
+      const question = Question.create({ electionId, ...q });
+      return question;
     }
   }
+
 
   Question.init({
     title: DataTypes.STRING,
