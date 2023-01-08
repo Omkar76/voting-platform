@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="<%= csrfToken %>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        <%= title %>
+        Sign in
     </title>
     <style>
         /* *{
@@ -17,8 +17,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>    
-    <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-xl m-auto">
+<body class="bg-purple-100">    
+    <%- include('header') %>
+    <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-sm m-auto">
         <% if(errors && errors.length > 0)  { %>
             <div class="bg-red-600 text-white px-4 py-2 rounded-md list-inside">
                 <% for(let err of  errors) { %>
@@ -26,21 +27,25 @@
                 <% } %>
             </div>
           <% } %>
-        
-        <h1 class="text-xl">Sign in</h1>
-        <form action="/login" method="post" class="flex flex-col gap-2">
+        <h1 class="text-4xl text-purple-800 font-bold">Sign in</h1>
+        <form action="/login" method="post" class="flex flex-col gap-2 text-purple-800">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <label>
                 Email
-                <input class="w-full border-2 rounded-sm border-green p-1" type="email" name="email">
+                <input placeholder="john@example.com" class="w-full border-2 rounded-sm border-purple p-2" type="email" name="email">
             </label>
             <label>
                 Password
-                <input class="w-full border-2 rounded-sm border-green p-1" type="password" name="password">
+                <input placeholder="******" class="w-full border-2 rounded-sm border-purple p-2" type="password" name="password">
             </label>
 
-            <button class="w-full bg-green-600 p-2 text-white rounded-md">Submit</button>
+            <button class="w-full bg-purple-600 p-2 text-white rounded-md">Submit</button>
+
+
         </form>
+        <p class="py-2 text-gray-700">New user? <a href="/signup" class="text-purple-800">Signup now</a></p>
+
+        
     </div>
 </body>
 

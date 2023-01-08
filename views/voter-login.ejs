@@ -17,8 +17,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>    
-    <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-xl m-auto">
+<body class="bg-purple-100">    
+    <%- include('header') %>
+    <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-sm m-auto">
         <% if(errors && errors.length > 0)  { %>
             <div class="bg-red-600 text-white px-4 py-2 rounded-md list-inside">
                 <% for(let err of  errors) { %>
@@ -27,18 +28,18 @@
             </div>
           <% } %>
         
-        <h1 class="text-xl"><%= title %></h1>
-        <form action="/v/<%= eid %>/login/" method="post" class="flex flex-col gap-2">
+        <h1 class="text-4xl text-purple-800 font-bold"><%= title %></h1>
+        <form action="/v/<%= eid %>/login/" method="post" class="flex flex-col gap-2 text-purple-800">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <label>
                 Username
-                <input class="w-full border-2 border-green p-1" type="text" name="username">
+                <input placeholder="John" class="w-full border-2 rounded-sm border-purple p-2" type="text" name="username">
             </label>
             <label>
                 Password
-                <input class="w-full border-2 border-green p-1" type="password" name="password">
+                <input placeholder="*******" class="w-full border-2 rounded-sm border-purple p-2" type="password" name="password">
             </label>
-            <button class="w-full bg-green-600 p-2 text-white rounded-md">Submit</button>
+            <button class="w-full bg-purple-600 p-2 text-white rounded-md">Submit</button>
         </form>
     </div>
 </body>

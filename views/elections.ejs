@@ -8,15 +8,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <title>Elections</title>
 </head>
-<body>
-    <div class="flex-col flex justify-center gap-y-2.5 p-4 max-w-5xl m-auto">
+<body class="bg-purple-100">
+    <%- include('header') %> 
 
-    <h1 class="text-4xl">Welcome!</h1>
+    <div class="flex-col flex justify-center gap-y-2.5 p-4 max-w-2xl m-auto">
+    <h1 class="text-4xl text-purple-800 font-bold">Welcome <%= email %>!</h1>
         <% if(!elections.length) { %>
                 You haven't created any elections yet!
         <% } %>    
         
-        <form method="POST" action="/elections/" enctype="application/json" class="flex">
+        <form method="POST" action="/elections/" enctype="application/json" class="flex gap-2">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" required>
                 <input  placeholder="Election name" class="p-2 border-2 border-gray-dark rounded-sm flex-grow" type="text" name="name" />
                 <button class="uppercase bg-purple-800 text-white rounded-md font-bold p-2">
@@ -25,9 +26,13 @@
         </form>
         
         <% for(let e of elections){ %>
-            <div class="border rounded-sm border-gray-dark flex flex-row items-center ">
-            <h2 class="font-bold text-2xl m-2 flex-auto"><%= e.name %></h2> 
-            <a href="/elections/<%= e.id %>/questions" class="p-1 text-purple-800 mx-2">Manage questions</a>
+            <div class="border rounded-sm border-gray-dark flex flex-col  bg-purple-200 items-center ">
+            <h2 class="font-bold text-2xl m-2 flex-auto">
+                <a href="/elections/<%= e.id %>/" class="p-1 text-purple-700 mx-2">
+                <%= e.name %>
+                </a>
+            </h2> 
+            <!-- <a href="/elections/<%= e.id %>/questions" class="p-1 text-purple-800 mx-2">Manage questions</a>
             <a href="/elections/<%= e.id %>/voters" class="p-1 text-purple-800 mx-2">Manage voters</a>
             
             <% if(!e.launched) { %>
@@ -37,6 +42,7 @@
             <% if(e.launched && !e.ended) { %>
                 <a href="/elections/<%= e.id %>/end" class="p-1 text-red-800 mx-2">End</a>
                 <% } %>
+            -->
             </div>
         <% } %> 
 

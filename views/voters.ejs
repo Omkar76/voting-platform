@@ -5,24 +5,51 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<%= csrfToken %>">
-    <title>Questions</title>
+    <title>Voters</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Voters for <%= election.name %></h1>
+<body class="bg-purple-100">
+    <%- include('header') %>
 
-    <form action="/elections/<%= election.id %>/voters" method="POST">
+    <div class="flex-col flex justify-center gap-y-2.5 p-4 max-w-2xl m-auto">
+
+    <h1 class="text-4xl text-purple-800 font-bold">Voters for "<%= election.name %>" election</h1>
+
+    <form action="/elections/<%= election.id %>/voters" method="POST" class="flex flex-col gap-2 text-purple-800">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <input type="text" name="username"/>
-      <input type="text" name="password">
-      <button>Add voter</button>
+      <input class="p-2 border-2 border-gray-dark rounded-sm w-full" placeholder="Username" type="text" name="username"/>
+      <input class="p-2 border-2 border-gray-dark rounded-sm w-full" placeholder="Password" type="password" name="password">
+      <button class="uppercase bg-purple-800 text-white rounded-md font-bold p-2">Add&nbsp;voter</button>
   </form>
-
+  <div>
    <% if(election.voters) { %>
     <% for( let v of election.voters)  { %>
-      <div style="border:1px solid black;">
-      <%= v.username  %> 
-    </div>
+      <div class="border-2 p-2 rounded-sm border-gray-dark text-purple-800 flex justify-between" >
+        <%= v.username  %>
+        <button onclick="deleteVoter(<%= election.id %>,<%= v.id %>)">
+        <%- include('delete') %>
+        </button>
+      </div>
     <% } %>
    <%}%>
+  </div>
+  </div>
+
+  <script>
+    const csrfToken = document.querySelector('meta[name="csrf-token"').getAttribute('content');
+
+    function deleteVoter(eid, vid){
+            fetch(`/v/${eid}/voters/${vid}`, {
+                method : 'DELETE',
+                headers : {'Content-Type': 'application/json'},
+                body : JSON.stringify({_csrf : csrfToken})
+            })
+            .then(res=>{
+                if(res.ok){
+                    window.location.reload()
+                }
+            }).catch(console.log)
+        }
+  </script>
 </body>
 </html>
