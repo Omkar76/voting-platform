@@ -17,14 +17,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
+<body class="bg-purple-100">
+    <%- include('header') %>
+
     <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-xl m-auto">
-        <h1 class="text-xl"><%= title %></h1>
+        <h1 class="text-4xl text-purple-800 font-bold"><%= title %></h1>
 
         <form action="/elections/<%= election.id %>/launch" method="post" class="flex flex-col gap-2">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            Are you sure you want to launch "<%= election.name %>" election? You won't be able to modify questions or options.
-            <button class="w-full bg-red-600 p-2 text-white rounded-md border">Launch</button>
+            <p>
+                Are you sure you want to launch <a class="text-purple-900 font-bold" href="/elections/<%= election.id %>/">"<%= election.name %>"</a> election? You won't be able to modify questions or options.
+            </p>
+            <button class="w-full bg-red-600 p-2 text-white rounded-md">Launch</button>
         </form>
     </div>
 </body>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Elections</title>
+</head>
+<body class="bg-purple-100">
+    <%- include('header') %> 
+    <div class="flex-col flex justify-center gap-y-2.5 p-4 max-w-2xl m-auto">
+        <% if(successmsg) { %>
+            <div class="bg-purple-600 text-white px-4 py-2 rounded-md list-inside">
+                 <%= successmsg %>
+            </div>
+          <% } %>
+    <h1 class="text-4xl font-bold text-purple-800">Election "<%= election.name %>"</h1>
+        <% if(!election) { %>
+                Election doesn't exist
+        <% } %> 
+        <p>You have <%= qcount %> questions and <%= vcount %> voters.</p>
+
+     <div class="text-lg flex flex-col gap-1.5">
+        <a href="/elections/<%= election.id %>/questions" class="py-1 text-purple-800">Manage questions </a>
+        <a href="/elections/<%= election.id %>/voters" class="py-1 text-purple-800">Manage voters</a>
+    
+        <% if(!election.launched) { %>
+            <a href="/elections/<%= election.id %>/launch" class="py-1 text-red-800">Launch</a>
+        <% } %>
+
+        <% if(election.launched && !election.ended) { %>
+            <a href="/elections/<%= election.id %>/end" class="py-1 text-red-800">End</a>                
+        <% } %>
+        
+    </div>
+    </div>
+</body>
+</html>
