@@ -25,15 +25,27 @@
      <div class="text-lg flex flex-col gap-1.5">
         <a href="/elections/<%= election.id %>/questions" class="py-1 text-purple-800">Manage questions </a>
         <a href="/elections/<%= election.id %>/voters" class="py-1 text-purple-800">Manage voters</a>
-    
-        <% if(!election.launched) { %>
-            <a href="/elections/<%= election.id %>/launch" class="py-1 text-red-800">Launch</a>
-        <% } %>
 
-        <% if(election.launched && !election.ended) { %>
-            <a href="/elections/<%= election.id %>/end" class="py-1 text-red-800">End</a>                
-        <% } %>
-        
+        <% if(election.launched){ %>
+            <% if(election.ended) { %>
+                <p>
+                Election has ended ! See the <a href="/elections/<%= election.id %>/votes" class="py-1 text-red-800">Votes</a> 
+                </p>
+            <% }else{ %>
+                <p>
+                    Election is launched! 
+                    <br/>
+                    <a href="/v/<%= election.id %>/" class="py-1 text-red-800">Visit Elections</a> 
+                    <br/>
+                    See the <a href="/elections/<%= election.id %>/votes" class="py-1 text-red-800">Votes</a> 
+                    <br/>
+                </p> 
+                <a href="/elections/<%= election.id %>/end" class="py-1 text-red-800">End election</a>                
+            <% } %>
+
+        <% }else{ %>
+            <a href="/elections/<%= election.id %>/launch" class="py-1 text-red-800">Launch</a>
+        <% }%>        
     </div>
     </div>
 </body>
