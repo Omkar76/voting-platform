@@ -6,25 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<%= csrfToken %>">
     <title>Questions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <h1>Questions for <%= election.name %></h1>
 
-    <form action="/elections/<%= election.id %>/questions" method="POST">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <input type="text" name="title"/>
-      <input type="text" name="description">
-      <button>Create Question</button>
+  <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-xl m-auto">
+
+    <h1  class="text-xl">Questions for <%= election.name %></h1>
+
+    <form action="/elections/<%= election.id %>/questions" method="POST" class="w-full flex flex-col gap-2">
+      <input type="hidden" class="p-2 border-2 border-gray-dark rounded-sm block w-full"  name="_csrf" value="<%= csrfToken %>">
+      <input placeholder="Elecion name" type="text" class="p-2 border-2 border-gray-dark rounded-sm block w-full" name="title"/>
+      <textarea placeholder="Election description" type="text" class="p-2 border-2 border-gray-dark rounded-sm block w-full" name="description"></textarea>
+      <button class="w-full bg-green-600 p-2 text-white rounded-md border text-center">Add Question</button>
   </form>
 
    <% if(election.questions) { %>
     <% for( let q of election.questions)  { %>
-      <div style="border:1px solid black;">
-      <%= q.title  %> 
-      <%= q.description %>
-      <a href="/elections/<%=election.id%>/questions/<%= q.id %>/options/">Manage options</a>
-    </div>
+      <div class="border p-2">
+        
+       <h3 class="text-xl"><%= q.title  %> </h3>
+       <p><%= q.description %></p>
+      <a href="/elections/<%=election.id%>/questions/<%= q.id %>/options/" class="text-purple-800">Manage options</a>
+       </div>
     <% } %>
    <%}%>
+  </div>
 </body>
 </html>

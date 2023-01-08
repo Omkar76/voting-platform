@@ -42,7 +42,15 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       validate: {
         notEmpty: { msg: "Non empty election name is required" }
-      }
+      },
+    },
+    launched: {
+      type : DataTypes.BOOLEAN,
+      defaultValue : false
+    },
+    ended: {
+      type : DataTypes.BOOLEAN,
+      defaultValue : false
     }
   }, {
     sequelize,

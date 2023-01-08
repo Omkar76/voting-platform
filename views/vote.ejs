@@ -10,15 +10,12 @@
         <%= title %>
     </title>
     <style>
-        /* *{
-            outline: 1px solid red;
-        } */
     </style>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body>    
-    <div class="grid justify-center gap-y-2.5 p-4 max-w-xl m-auto">
+    <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-xl m-auto">
         <% if(errors && errors.length > 0)  { %>
             <div class="bg-red-600 text-white px-4 py-2 rounded-md list-inside">
                 <% for(let err of  errors) { %>
@@ -40,7 +37,7 @@
             
                 <% for( let option of q.options) { %>
                     <label class="block">
-                        <input type="radio" name="<%= q.id %>" value="<%= option.id %>"/>
+                        <input type="radio" name="question_<%= q.id %>" value="<%= option.id %>"/>
                         <%= option.text %>
                     </label>
                 <% } %>
