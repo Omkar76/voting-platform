@@ -332,7 +332,6 @@ app.post("/elections/:eid/launch", async (req, res) => {
     }
   );
 
-  console.log(election, "Wtf");
   req.flash("success", `Election "${election.name}" launched successfully`);
   if (req.accepts("html")) {
     res.redirect(`/elections/${req.params.eid}/`);
@@ -369,6 +368,7 @@ app.use("/v/:eid", async (req, _, next) => {
 
 app.get("/v/:eid/", async (req, res) => {
   res.locals.errors = req.flash("error");
+
   if (
     !req.isAuthenticated ||
     !(req.isAuthenticated() && req?.user?.role == "voter")
@@ -376,15 +376,17 @@ app.get("/v/:eid/", async (req, res) => {
     res.redirect(path.join(req.url, "login"));
   } else {
     const voter = await Voter.findByPk(req.user.id);
-    const election = await Election.findOne({
-      where: { id: req.params.eid },
+    const electionObj = await Election.findByPk(req.params.eid, {
+      attributes: ["name", "launched", "ended"],
       include: [
         {
           model: Question,
+          attributes: ["id", "title", "description"],
           as: "questions",
           include: [
             {
               model: Option,
+              attributes: ["id", "text", "voteCount"],
               as: "options",
             },
           ],
@@ -392,12 +394,13 @@ app.get("/v/:eid/", async (req, res) => {
       ],
     });
 
+    const election = electionObj.toJSON();
     if (election.ended) {
-      return res.render("result");
+      return res.render("votes", { election });
     }
 
     if (voter.voted) {
-      return res.render("voting-thanks");
+      return res.render("voting-thanks", { election });
     }
 
     res.render("vote", {
@@ -429,7 +432,8 @@ app.post("/v/:eid/login", async (req, res, next) => {
 
 app.post("/v/:eid/vote", ensureLogin({ role: "voter" }), async (req, res) => {
   const voter = await Voter.findByPk(req.user.id);
-  const election = await Election.findOne({
+  const _election = await Election.findOne({
+    plain: true,
     where: { id: req.params.eid },
     include: [
       {
@@ -439,11 +443,16 @@ app.post("/v/:eid/vote", ensureLogin({ role: "voter" }), async (req, res) => {
     ],
   });
 
+  const election = _election.toJSON();
+
+  console.log(req.body, "bro");
   if (voter.voted) {
     return res.send("Already voted");
   }
 
+  console.log(res.body);
   election.questions.forEach((q) => {
+    console.log(q);
     Option.increment("voteCount", {
       by: 1,
       where: {
