@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="<%= csrfToken %>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -14,13 +13,14 @@
     <%- include('header') %> 
     <div class="flex-col flex justify-center gap-y-2.5 p-4 max-w-2xl m-auto">
 
-        <h1 class="text-4xl font-bold text-purple-800">Votes for "<%= election.name %>"</h1>
+        <h1 class="text-4xl font-bold text-purple-800 text-center">Votes for "<%= election.name %>" election</h1>
             <% if(!election) { %>
                     Election doesn't exist
             <% } %> 
         <div class="text-lg flex flex-col gap-1.5">
             <% for( let question of election.questions ) { %>
                 <div>
+                    <h2 class="text-3xl text-center text-purple-800"><%= question.title%></h2>
                     <canvas id="canvas<%= question.id %>">
                     Canvas not supported!
                     </canvas>
@@ -30,7 +30,6 @@
     </div>
     <script>
         const election = <%- JSON.stringify(election) %>;
-        console.log(election)
         for(let question of election.questions){
             const qid = question.id;
             console.log(question)
@@ -44,15 +43,7 @@
               data: question.options.map(o=>o.voteCount),
               borderWidth: 1
             }]
-          },
-        //   options: {
-        //     scales: {
-        //       y: {
-        //         step : 1, 
-        //         beginAtZero: true
-        //       }
-        //     }
-        //   }
+          }
         });
     }
     
