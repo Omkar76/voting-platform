@@ -26,6 +26,7 @@ app.use(csrf("hwgA0JweSTaQFclN08fFvJOEIFCaxdSs", ["POST", "PUT", "DELETE"]));
 app.use(flash());
 
 const redisClient = createClient({ legacyMode: true });
+
 redisClient.connect().catch(console.error);
 app.use(
   session({
@@ -157,6 +158,15 @@ app.post("/admins", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     admin = await Admin.create({ ...req.body, password: hashedPassword });
+    admin = admin.toJSON();
+    admin.role = "admin";
+
+    req.login(admin, (err) => {
+      if (err) {
+        return console.log(err);
+      }
+      res.redirect("/elections");
+    });
   } catch (error) {
     console.error(error);
     if (error instanceof ValidationError) {
@@ -167,13 +177,6 @@ app.post("/admins", async (req, res) => {
       return res.redirect("/signup");
     }
   }
-
-  req.login(admin, (err) => {
-    if (err) {
-      return console.log(err);
-    }
-    res.redirect("/elections");
-  });
 });
 
 app.use(
@@ -467,4 +470,4 @@ app.post("/v/:eid/vote", ensureLogin({ role: "voter" }), async (req, res) => {
   });
 });
 
-module.exports = app;
+module.exports = { app, redisClient };
