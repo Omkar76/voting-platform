@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 
 // const Option = require('./option');
 
@@ -17,23 +15,25 @@ module.exports = (sequelize, DataTypes) => {
 
       Question.hasMany(models.Option, {
         foreignKey: "questionId",
-        as: 'options'
+        as: "options",
       });
     }
 
     static async addQuestion(electionId, q) {
-      const question = Question.create({ ...q, electionId});
+      const question = Question.create({ ...q, electionId });
       return question;
     }
   }
 
-
-  Question.init({
-    title: DataTypes.STRING,
-    description: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'Question',
-  });
+  Question.init(
+    {
+      title: DataTypes.STRING,
+      description: DataTypes.STRING,
+    },
+    {
+      sequelize,
+      modelName: "Question",
+    }
+  );
   return Question;
 };

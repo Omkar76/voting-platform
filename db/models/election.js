@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Election extends Model {
     /**
@@ -12,16 +10,16 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Election.hasMany(models.Question, {
         foreignKey: "electionId",
-        as: "questions"
+        as: "questions",
       });
 
       Election.hasMany(models.Voter, {
-        foreignKey : "electionId",
-        as : "voters"
+        foreignKey: "electionId",
+        as: "voters",
       });
 
       Election.belongsTo(models.Admin, {
-        foreignKey: "adminId"
+        foreignKey: "adminId",
       });
     }
 
@@ -36,25 +34,28 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
 
-  Election.init({
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: { msg: "Non empty election name is required" }
+  Election.init(
+    {
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notEmpty: { msg: "Non empty election name is required" },
+        },
+      },
+      launched: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      ended: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
     },
-    launched: {
-      type : DataTypes.BOOLEAN,
-      defaultValue : false
-    },
-    ended: {
-      type : DataTypes.BOOLEAN,
-      defaultValue : false
+    {
+      sequelize,
+      modelName: "Election",
     }
-  }, {
-    sequelize,
-    modelName: 'Election',
-  });
+  );
   return Election;
 };
