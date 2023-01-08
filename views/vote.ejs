@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="csrf-token" content="<%= csrfToken %>">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <style>
+        /* *{
+            outline: 1px solid red;
+        } */
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>    
+    <div class="grid justify-center gap-y-2.5 p-4 max-w-xl m-auto">
+        <% if(errors && errors.length > 0)  { %>
+            <div class="bg-red-600 text-white px-4 py-2 rounded-md list-inside">
+                <% for(let err of  errors) { %>
+                    <li> <%= err %> </li>
+                <% } %>
+            </div>
+          <% } %>
+        
+        <h1 class="text-xl">Vote</h1>
+
+        <form action="/v/<%= eid %>/vote" method="post" class="flex flex-col gap-2">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <% for( let q of election.questions)  { %>
+            <div>
+            <p>
+                <h2 class="text-xl"><%= q.title %></h2>
+            </p>
+            
+                <% for( let option of q.options) { %>
+                    <label class="block">
+                        <input type="radio" name="<%= q.id %>" value="<%= option.id %>"/>
+                        <%= option.text %>
+                    </label>
+                <% } %>
+           
+            </div>
+        <% } %>
+        <button class="w-full bg-green-600 p-2 text-white rounded-md">Submit</button>
+        </form>
+    </div>
+</body>
+
+</html>
