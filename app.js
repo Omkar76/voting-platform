@@ -385,30 +385,37 @@ app.use("/v/:eid", async (req, _, next) => {
 app.get("/v/:eid/", async (req, res) => {
   res.locals.errors = req.flash("error");
 
+  const election = await Election.getResult(req.params.eid);
+
+  if (election.ended) {
+    const election = await Election.getResult(req.params.eid);
+    return res.render("votes", { election });
+  }
+
+  // not ended
+
   if (
+    // not authenticated
     !req.isAuthenticated ||
     !(req.isAuthenticated() && req?.user?.role == "voter")
   ) {
-    res.redirect(path.join(req.url, "login"));
-  } else {
-    const voter = await Voter.findByPk(req.user.id);
-    const election = await Election.getResult(req.params.eid);
-
-    if (election.ended) {
-      return res.render("votes", { election });
-    }
-
-    if (voter.voted) {
-      return res.render("voting-thanks", { election });
-    }
-
-    res.render("vote", {
-      csrfToken: req.csrfToken(),
-      eid: req.params.eid,
-      election,
-      title: "Vote",
-    });
+    return res.redirect(path.join(req.url, "login"));
   }
+
+  // authenticated
+
+  const voter = await Voter.findByPk(req.user.id);
+
+  if (voter.voted) {
+    return res.render("voting-thanks", { election });
+  }
+
+  res.render("vote", {
+    csrfToken: req.csrfToken(),
+    eid: req.params.eid,
+    election,
+    title: "Vote",
+  });
 });
 
 app.get("/v/:eid/login", async (req, res) => {
