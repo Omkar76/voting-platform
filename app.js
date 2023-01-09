@@ -4,15 +4,18 @@ const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const checkElectionOwnership = require("./middleware/checkElectionOwnership");
 const csrf = require("tiny-csrf");
 const flash = require("connect-flash");
 const LocalStratergy = require("passport-local").Strategy;
 const passport = require("passport");
 const path = require("path");
 const session = require("express-session");
-const ensureLogin = require("./middleware/ensureLogin");
 const RedisStore = require("connect-redis")(session);
+
+const checkElectionOwnership = require("./middleware/checkElectionOwnership");
+const ensureLogin = require("./middleware/ensureLogin");
+const validateLaunch = require("./middleware/validateLaunch");
+
 const { createClient } = require("redis");
 const { Election, Question, Option, Admin, Voter } = require("./db/models");
 const { ValidationError } = require("sequelize");
@@ -216,6 +219,8 @@ app.use("/elections/:eid", checkElectionOwnership);
 
 app.get("/elections/:eid", async (req, res) => {
   const successMessages = req.flash("success");
+  res.locals.errors = req.flash("error");
+
   res.locals.successmsg =
     successMessages.length > 0 ? successMessages[0] : null;
   const election = await Election.findByPk(req.params.eid);
@@ -258,21 +263,7 @@ app.post("/elections/:eid/questions/", async (req, res) => {
 });
 
 app.get("/elections/:eid/votes/", async (req, res) => {
-  const electionObj = await Election.findByPk(req.params.eid, {
-    attributes: ["name"],
-    include: [
-      {
-        model: Question,
-        attributes: ["id", "title", "description"],
-        as: "questions",
-        include: [
-          { model: Option, attributes: ["text", "voteCount"], as: "options" },
-        ],
-      },
-    ],
-  });
-
-  const election = await electionObj.toJSON();
+  const election = await Election.getResult(req.params.eid);
   if (req.accepts("html")) {
     res.render("votes", { csrfToken: req.csrfToken(), election });
   } else {
@@ -328,10 +319,9 @@ app.post("/elections/:eid/voters/", async (req, res) => {
   }
 });
 
-app.get("/elections/:eid/launch", async (req, res) => {
-  const election = await Election.findByPk(req.params.eid);
+app.get("/elections/:eid/launch", validateLaunch, async (req, res) => {
   res.render("launch", {
-    election,
+    election: req.election,
     csrfToken: req.csrfToken(),
     title: "Launch election",
   });
@@ -346,7 +336,7 @@ app.get("/elections/:eid/end", async (req, res) => {
   });
 });
 
-app.post("/elections/:eid/launch", async (req, res) => {
+app.post("/elections/:eid/launch", validateLaunch, async (req, res) => {
   const [, election] = await Election.update(
     { launched: true },
     {
@@ -402,25 +392,8 @@ app.get("/v/:eid/", async (req, res) => {
     res.redirect(path.join(req.url, "login"));
   } else {
     const voter = await Voter.findByPk(req.user.id);
-    const electionObj = await Election.findByPk(req.params.eid, {
-      attributes: ["name", "launched", "ended"],
-      include: [
-        {
-          model: Question,
-          attributes: ["id", "title", "description"],
-          as: "questions",
-          include: [
-            {
-              model: Option,
-              attributes: ["id", "text", "voteCount"],
-              as: "options",
-            },
-          ],
-        },
-      ],
-    });
+    const election = await Election.getResult(req.params.eid);
 
-    const election = electionObj.toJSON();
     if (election.ended) {
       return res.render("votes", { election });
     }

@@ -16,6 +16,14 @@
                  <%= successmsg %>
             </div>
           <% } %>
+          <% if(errors && errors.length > 0)  { %>
+            Can't launch election!
+            <div class="bg-red-600 text-white px-4 py-2 rounded-md list-inside">
+                <% for(let err of  errors) { %>
+                    <li> <%= err %> </li>
+                <% } %>
+            </div>
+          <% } %>
     <h1 class="text-4xl font-bold text-purple-800">Election "<%= election.name %>"</h1>
         <% if(!election) { %>
                 Election doesn't exist
@@ -34,7 +42,6 @@
             <% }else{ %>
                 <p>
                     Election is launched! 
-                    <br/>
                     <a href="/v/<%= election.id %>/" class="py-1 text-red-800">Visit Elections</a> 
                     <br/>
                     See the <a href="/elections/<%= election.id %>/votes" class="py-1 text-red-800">Votes</a> 

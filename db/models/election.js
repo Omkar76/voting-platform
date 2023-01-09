@@ -1,5 +1,6 @@
 "use strict";
 const { Model } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class Election extends Model {
     /**
@@ -30,6 +31,29 @@ module.exports = (sequelize, DataTypes) => {
 
     static addElection(adminId, e) {
       const election = Election.create({ ...e, adminId });
+      return election;
+    }
+
+    static async getResult(eid) {
+      const electionObj = await Election.findByPk(eid, {
+        attributes: ["id", "name", "launched", "ended"],
+        include: [
+          {
+            model: sequelize.models.Question,
+            attributes: ["id", "title", "description"],
+            as: "questions",
+            include: [
+              {
+                model: sequelize.models.Option,
+                attributes: ["id", "text", "voteCount"],
+                as: "options",
+              },
+            ],
+          },
+        ],
+      });
+
+      const election = electionObj.toJSON();
       return election;
     }
   }
