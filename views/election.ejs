@@ -37,7 +37,7 @@
         <% if(election.launched){ %>
             <% if(election.ended) { %>
                 <p>
-                Election has ended ! See the <a href="/elections/<%= election.id %>/votes" class="py-1 text-red-800">Votes</a> 
+                Election has ended ! See the <a href="/v/<%= election.id %>/" class="py-1 text-red-800">Votes</a> 
                 </p>
             <% }else{ %>
                 <p>
