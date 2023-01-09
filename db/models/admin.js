@@ -16,9 +16,22 @@ module.exports = (sequelize, DataTypes) => {
   }
   Admin.init(
     {
-      firstName: DataTypes.STRING,
+      firstName: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        validate: {
+          notNull: true,
+          notEmpty: { msg: "Firstname is required" },
+        },
+      },
       lastName: DataTypes.STRING,
-      email: DataTypes.STRING,
+      email: {
+        type: DataTypes.STRING,
+        validate: {
+          isEmail: { msg: "Invalid email" },
+        },
+        unique: { msg: "Email address already in use" },
+      },
       password: DataTypes.STRING,
     },
     {
@@ -26,5 +39,7 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Admin",
     }
   );
+
+  Admin.syn;
   return Admin;
 };
