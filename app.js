@@ -223,19 +223,29 @@ app.get("/elections/:eid", async (req, res) => {
     election.countQuestions(),
     election.countVoters(),
   ]);
-  res.render("election", {
-    election,
-    csrfToken: req.csrfToken(),
-    qcount,
-    vcount,
-  });
+
+  if (req.accepts("html")) {
+    res.render("election", {
+      election,
+      csrfToken: req.csrfToken(),
+      qcount,
+      vcount,
+    });
+  } else {
+    res.json({ ...election, qcount, vcount });
+  }
 });
 
 app.get("/elections/:eid/questions", async (req, res) => {
   const election = await Election.findByPk(req.params.eid, {
     include: [{ model: Question, as: "questions" }],
   });
-  res.render("questions", { election, csrfToken: req.csrfToken() });
+
+  if (req.accepts("html")) {
+    res.render("questions", { election, csrfToken: req.csrfToken() });
+  } else {
+    res.json(election.questions);
+  }
 });
 
 app.post("/elections/:eid/questions/", async (req, res) => {
@@ -263,15 +273,23 @@ app.get("/elections/:eid/votes/", async (req, res) => {
   });
 
   const election = await electionObj.toJSON();
-
-  res.render("votes", { csrfToken: req.csrfToken(), election });
+  if (req.accepts("html")) {
+    res.render("votes", { csrfToken: req.csrfToken(), election });
+  } else {
+    res.json(election);
+  }
 });
 
 app.get("/elections/:eid/questions/:qid/options", async (req, res) => {
   const question = await Question.findByPk(req.params.qid, {
     include: [{ model: Option, as: "options" }],
   });
-  res.render("options", { question, csrfToken: req.csrfToken() });
+
+  if (req.accepts("html")) {
+    res.render("options", { question, csrfToken: req.csrfToken() });
+  } else {
+    res.render(question);
+  }
 });
 
 app.post("/elections/:eid/questions/:qid/options/", async (req, res) => {
@@ -288,7 +306,12 @@ app.get("/elections/:eid/voters", async (req, res) => {
   const election = await Election.findByPk(req.params.eid, {
     include: [{ model: Voter, as: "voters" }],
   });
-  res.render("voters", { election, csrfToken: req.csrfToken() });
+
+  if (req.accepts("html")) {
+    res.render("voters", { election, csrfToken: req.csrfToken() });
+  } else {
+    res.json(election.voters);
+  }
 });
 
 app.post("/elections/:eid/voters/", async (req, res) => {
@@ -448,7 +471,6 @@ app.post("/v/:eid/vote", ensureLogin({ role: "voter" }), async (req, res) => {
 
   const election = _election.toJSON();
 
-  console.log(req.body, "bro");
   if (voter.voted) {
     return res.send("Already voted");
   }
