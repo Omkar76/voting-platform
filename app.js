@@ -272,15 +272,73 @@ app.get("/elections/:eid/votes/", async (req, res) => {
 });
 
 app.get("/elections/:eid/questions/:qid/options", async (req, res) => {
+  const election = await Election.findByPk(req.params.eid);
   const question = await Question.findByPk(req.params.qid, {
     include: [{ model: Option, as: "options" }],
   });
 
   if (req.accepts("html")) {
-    res.render("options", { question, csrfToken: req.csrfToken() });
+    res.render("options", { election, question, csrfToken: req.csrfToken() });
   } else {
     res.render(question);
   }
+});
+
+app.delete("/elections/:eid/questions/:qid/options/:oid/", async (req, res) => {
+  const { eid, qid, oid } = req.params;
+  const option = await Option.findByPk(oid);
+  const question = await option.getQuestion();
+  const election = await question.getElection();
+
+  if (election.launched) {
+    return res.json({
+      success: false,
+      message: "Cant delete voters after it's launched",
+    });
+  }
+
+  if (qid != question.id || eid != question.electionId) {
+    return res.json({
+      success: false,
+      message: "You do not have access to the resource",
+    });
+  }
+
+  await Option.destroy({
+    where: {
+      id: oid,
+    },
+  });
+
+  res.json({ success: true });
+});
+
+app.delete("/elections/:eid/voters/:vid/", async (req, res) => {
+  const { eid, vid } = req.params;
+  const voter = await Voter.findByPk(vid);
+  const election = await voter.getElection();
+
+  if (election.launched) {
+    return res.json({
+      success: false,
+      message: "Cant delete voters after it's launched",
+    });
+  }
+
+  if (eid != voter.electionId) {
+    return res.json({
+      success: false,
+      message: "You do not have access to the resource",
+    });
+  }
+
+  await Voter.destroy({
+    where: {
+      id: vid,
+    },
+  });
+
+  res.json({ success: true });
 });
 
 app.post("/elections/:eid/questions/:qid/options/", async (req, res) => {

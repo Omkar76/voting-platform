@@ -24,9 +24,12 @@
         <% for( let o of question.options)  { %>
         <div class="border-2 p-2 rounded-sm border-gray-dark text-purple-800 flex justify-between">
           <%= o.text  %> 
-          <button onclick="deleteVoter()">
+        
+          <% if(election.launched === false){ %>
+          <button onclick="deleteOption(<%= question.electionId %>,<%=question.id%>,<%=o.id%>)">
             <%- include('delete') %>
             </button>
+          <% } %>
         </div>
         <% } %>
     <%}%>
@@ -34,15 +37,21 @@
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"').getAttribute('content');
     
-        function deleteVoter(eid, vid){
-                fetch(`/v/${eid}/voters/${vid}`, {
+        function deleteOption(eid, qid, oid){
+                fetch(`/elections/${eid}/questions/${qid}/options/${oid}/`, {
                     method : 'DELETE',
                     headers : {'Content-Type': 'application/json'},
                     body : JSON.stringify({_csrf : csrfToken})
                 })
-                .then(res=>{
+                .then(async res=>{
                     if(res.ok){
+                        const data = await res.json();
+                        if(!data.success){
+                            alert(data.message);
+                        }
                         window.location.reload()
+                    }else{
+                        alert(res.statusText);
                     }
                 }).catch(console.log)
             }
