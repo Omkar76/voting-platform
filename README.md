@@ -10,3 +10,6 @@ This is a voting plaform made with NodeJS that allows users to create elections 
 - Redis for session store
 - Passport for auth
 - Sequelize as ORM
+
+## Link
+https://d2aeypfppu0ayy.cloudfront.net/
