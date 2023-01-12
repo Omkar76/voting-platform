@@ -1,6 +1,8 @@
 <header class="py-2 px-3  bg-purple-700 font-extrabold text-white italic flex justify-between">
     <a href="/" class="text-3xl">Votify</a> 
+    <% if (isLoggedIn){ %>
     <form action="/signout">
         <button class="align-baseline h-full border-2 border-white rounded-md px-3">Logout</button>
     </form>
+    <% } %>
 </header>

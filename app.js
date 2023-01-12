@@ -117,6 +117,11 @@ passport.deserializeUser((admin, done) => {
   done(null, admin);
 });
 
+app.use("/", (req, res, next) => {
+  res.locals.isLoggedIn = req.isAuthenticated();
+  next();
+});
+
 app.get("/", (req, res) => {
   if (req?.user?.role == "admin") {
     return res.redirect("/elections");
