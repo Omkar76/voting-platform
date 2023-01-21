@@ -23,7 +23,7 @@ module.exports = {
         validate: {
           isEmail: { msg: "Invalid email" },
         },
-        unique: { msg: "Email address already in use" },
+        unique: true,
       },
       password: Sequelize.STRING,
       createdAt: {
