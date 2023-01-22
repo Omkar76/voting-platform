@@ -129,6 +129,11 @@ app.get("/", (req, res) => {
   res.render("home");
 });
 
+app.get("*", (req, res, next) => {
+  res.locals.url = req.url;
+  next();
+});
+
 app.get("/login", (req, res) => {
   res.locals.errors = req.flash("error");
   res.render("login", { title: "Login", csrfToken: req.csrfToken() });
