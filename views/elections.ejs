@@ -16,7 +16,7 @@
         <% if(!elections.length) { %>
                 You haven't created any elections yet!
         <% } %>    
-        
+       <%- include('error') %>
         <form method="POST" action="/elections/" enctype="application/json" class="flex gap-2">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" required>
                 <input  placeholder="Election name" class="p-2 border-2 border-gray-dark rounded-sm flex-grow" type="text" name="name" />

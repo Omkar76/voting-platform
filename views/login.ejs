@@ -15,13 +15,8 @@
 <body class="bg-slate-200">    
     <%- include('header') %>
     <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-sm m-auto">
-        <% if(errors && errors.length > 0)  { %>
-            <div class="bg-red-600 text-white px-4 py-2 rounded-md list-inside">
-                <% for(let err of  errors) { %>
-                    <li> <%= err %> </li>
-                <% } %>
-            </div>
-          <% } %>
+        <%- include('error') %>
+
         <h1 class="text-4xl text-purple-800 font-bold">Sign in</h1>
         <form action="/login" method="post" class="flex flex-col gap-2 text-purple-800">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
