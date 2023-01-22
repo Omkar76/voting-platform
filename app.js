@@ -194,6 +194,8 @@ app.use(
 
 app.get("/elections", async (req, res) => {
   const elections = await Election.getElections(req.user.id);
+  res.locals.errors = req.flash("error");
+  console.log(res.locals.errors);
 
   if (req.accepts("html")) {
     res.render("elections", {
@@ -207,12 +209,24 @@ app.get("/elections", async (req, res) => {
 });
 
 app.post("/elections", async (req, res) => {
-  const election = await Election.addElection(req.user.id, req.body);
+  try {
+    const election = await Election.addElection(req.user.id, req.body);
 
-  if (req.accepts("html")) {
-    res.redirect("/elections");
-  } else {
-    res.json(election);
+    if (req.accepts("html")) {
+      res.redirect("/elections");
+    } else {
+      res.json(election);
+    }
+  } catch (error) {
+    console.log(error);
+    if (error instanceof ValidationError) {
+      req.flash(
+        "error",
+        error.errors.map((err) => err.message)
+      );
+      return res.redirect(req.url);
+    }
+    throw error; // 🤣
   }
 });
 
@@ -534,5 +548,7 @@ app.post("/v/:eid/vote", ensureLogin({ role: "voter" }), async (req, res) => {
     res.redirect(req.url.replace("vote", ""));
   });
 });
+
+// app.use();
 
 module.exports = { app, redisClient };
