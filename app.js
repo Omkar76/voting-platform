@@ -199,7 +199,7 @@ app.get("/elections", async (req, res) => {
     res.render("elections", {
       elections,
       csrfToken: req.csrfToken(),
-      email: req.user.email,
+      displayName: req.user.firstName + (req.user.lastName ?? ""),
     });
   } else {
     res.json(elections);
