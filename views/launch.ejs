@@ -17,6 +17,7 @@
 
     <div class="flex flex-col justify-center gap-y-2.5 p-4 max-w-xl m-auto">
         <h1 class="text-4xl text-purple-800 font-bold"><%= title %></h1>
+        <%- include('breadcrumb') %> 
 
         <form action="/elections/<%= election.id %>/launch" method="post" class="flex flex-col gap-2">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
