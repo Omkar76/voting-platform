@@ -286,6 +286,17 @@ app.post("/elections/:eid/questions/", async (req, res) => {
   }
 });
 
+app.get("/elections/:eid/questions/:qid", async (req, res) => {
+  const question = await Question.findByPk(req.params.qid, {
+    include: [{ model: Option, as: "options" }],
+  });
+  if (req.accepts("html")) {
+    res.render("question", { question });
+  } else {
+    res.json(question);
+  }
+});
+
 app.get("/elections/:eid/votes/", async (req, res) => {
   const election = await Election.getResult(req.params.eid);
   if (req.accepts("html")) {

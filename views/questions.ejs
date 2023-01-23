@@ -30,8 +30,9 @@
    <% if(election.questions) { %>
     <% for( let q of election.questions)  { %>
       <div class="border-2 border-purple p-2">
-        
-       <h3 class="text-2xl text-purple-800"><%= q.title  %> </h3>
+        <a href="/elections/<%=election.id%>/questions/<%= q.id %>/">
+          <h3 class="text-2xl text-purple-800"><%= q.title  %></h3>
+        </a>
        <p><%= q.description %></p>
        <a href="/elections/<%=election.id%>/questions/<%= q.id %>/options/" class="text-purple-800">Manage options</a>
        </div>
