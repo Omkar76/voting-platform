@@ -206,7 +206,11 @@ app.get("/elections", async (req, res) => {
     res.render("elections", {
       elections,
       csrfToken: req.csrfToken(),
-      displayName: req.user.firstName + (req.user.lastName ?? ""),
+      displayName: (
+        req.user.firstName +
+        " " +
+        (req.user.lastName ?? "")
+      ).trim(),
     });
   } else {
     res.json(elections);
