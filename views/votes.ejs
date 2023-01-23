@@ -32,7 +32,6 @@
         const election = <%- JSON.stringify(election) %>;
         for(let question of election.questions){
             const qid = question.id;
-            console.log(question)
         const ctx = document.querySelector("#canvas"+qid).getContext('2d');
         new Chart(ctx, {
           type: 'doughnut',

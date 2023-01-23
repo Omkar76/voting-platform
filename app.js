@@ -200,7 +200,6 @@ app.use(
 app.get("/elections", async (req, res) => {
   const elections = await Election.getElections(req.user.id);
   res.locals.errors = req.flash("error");
-  console.log(res.locals.errors);
 
   if (req.accepts("html")) {
     res.render("elections", {
@@ -552,9 +551,7 @@ app.post("/v/:eid/vote", ensureLogin({ role: "voter" }), async (req, res) => {
     return res.send("Already voted");
   }
 
-  console.log(res.body);
   election.questions.forEach((q) => {
-    console.log(q);
     Option.increment("voteCount", {
       by: 1,
       where: {
