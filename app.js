@@ -28,9 +28,16 @@ app.use(cookieParser("kfdsjkgfdsjfjhfjdsfjdfhgsdjgjfsdhjfgdsfh"));
 app.use(csrf("hwgA0JweSTaQFclN08fFvJOEIFCaxdSs", ["POST", "PUT", "DELETE"]));
 app.use(flash());
 
-const redisClient = createClient({ legacyMode: true });
+const redisClient = createClient({
+  legacyMode: true,
+  socket: {
+    port: process.env.REDIS_PORT || 6379,
+    host: process.env.REDIS_HOST || "localhost",
+  },
+});
 
-redisClient.connect().catch(console.error);
+redisClient.connect(); //.catch(console.error);
+
 app.use(
   session({
     store: new RedisStore({ client: redisClient }),
