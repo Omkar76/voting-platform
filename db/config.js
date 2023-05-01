@@ -3,22 +3,22 @@ module.exports = {
     username: "postgres",
     password: "postgres",
     database: "voting_dev",
-    host: "127.0.0.1",
+    host: "db",
     dialect: "postgres",
   },
   test: {
     username: "postgres",
     password: "postgres",
     database: "voting_test",
-    host: "127.0.0.1",
+    host: "db",
     dialect: "postgres",
     logging: false,
   },
-  production: {
+  production: { 
     username: "postgres",
     password: "postgres",
     database: "voting_prod",
-    host: "127.0.0.1",
+    host: "db",
     dialect: "postgres",
   },
 };

@@ -27,7 +27,6 @@ const saltRounds = 10;
 app.use(cookieParser("kfdsjkgfdsjfjhfjdsfjdfhgsdjgjfsdhjfgdsfh"));
 app.use(csrf("hwgA0JweSTaQFclN08fFvJOEIFCaxdSs", ["POST", "PUT", "DELETE"]));
 app.use(flash());
-
 const redisClient = createClient({
   legacyMode: true,
   socket: {
