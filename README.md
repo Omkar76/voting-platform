@@ -12,5 +12,5 @@ This is a voting plaform made with NodeJS that allows users to create elections 
 - Sequelize as ORM
 
 ## Link
-
+(project is not deployed anymore)
 https://d2aeypfppu0ayy.cloudfront.net/
